@@ -11,7 +11,7 @@ public class Node extends AJson {
      * Class level-declarations.
      */
     private String address;
-    private Endpoint endpoint;
+    private Endpoint httpEndpoint;
 
     /**
      *
@@ -33,15 +33,15 @@ public class Node extends AJson {
      *
      * @return
      */
-    public Endpoint getEndpoint() {
-        return endpoint;
+    public Endpoint getHttpEndpoint() {
+        return httpEndpoint;
     }
 
     /**
      *
      * @param endpoint
      */
-    public void setEndpoint(Endpoint endpoint) {
-        this.endpoint = endpoint;
+    public void setHttpEndpoint(Endpoint httpEndpoint) {
+        this.httpEndpoint = httpEndpoint;
     }
 }

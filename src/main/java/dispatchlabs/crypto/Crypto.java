@@ -1,7 +1,8 @@
 package dispatchlabs.crypto;
 
-import org.bitcoin.NativeSecp256k1;
-import org.bouncycastle.jcajce.provider.digest.Keccak;
+import java.io.ByteArrayOutputStream;
+import java.math.BigInteger;
+import org.web3j.crypto.*;
 
 /**
  *
@@ -16,7 +17,15 @@ public class Crypto {
      * @throws Exception
      */
     public static byte[] sign(byte[] privateKey, byte[] hash) throws Exception {
-        return NativeSecp256k1.sign(privateKey, hash);
+        BigInteger privKey = new BigInteger(privateKey);
+        BigInteger pubKey = Sign.publicKeyFromPrivate(privKey);
+        ECKeyPair keyPair = new ECKeyPair(privKey, pubKey);
+        Sign.SignatureData signature = Sign.signMessage(hash, keyPair, false);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byteArrayOutputStream.write(signature.getR());
+        byteArrayOutputStream.write(signature.getS());
+        byteArrayOutputStream.write(new byte[] {(byte)(signature.getV() - 27)});
+        return byteArrayOutputStream.toByteArray();
     }
 
     /**
@@ -24,8 +33,6 @@ public class Crypto {
      * @return
      */
     public static byte[] hash(byte[] bytes) {
-        final Keccak.Digest256 keccak = new Keccak.Digest256();
-        keccak.update(bytes);
-        return keccak.digest();
+        return Hash.sha3(bytes);
     }
 }

@@ -12,9 +12,9 @@ import java.io.ByteArrayOutputStream;
  */
 public class Transaction extends AJson {
 
-	private static final long serialVersionUID = -6784018212068358301L;
+    private static final long serialVersionUID = -6784018212068358301L;
 
-	public static class Type {
+    public static class Type {
 
         /**
          * Class level-declarations.
@@ -31,17 +31,18 @@ public class Transaction extends AJson {
     private byte type;
     private String from;
     private String to;
-    private long value;
+    private String value;
     private String code;
     private String method;
+    private String params;
     private long time;
     private String signature;
-    private long hertz;
+    private String hertz;
     // Transients
     private String fromName;
     private String toName;
 
-	/**
+    /**
      *
      * @return
      */
@@ -109,7 +110,7 @@ public class Transaction extends AJson {
      *
      * @return
      */
-    public long getValue() {
+    public String getValue() {
         return value;
     }
 
@@ -117,7 +118,7 @@ public class Transaction extends AJson {
      *
      * @param value
      */
-    public void setValue(long value) {
+    public void setValue(String value) {
         this.value = value;
     }
 
@@ -184,39 +185,31 @@ public class Transaction extends AJson {
     public void setSignature(String signature) {
         this.signature = signature;
     }
-    
-    public byte[] getCode() {
-		return code;
-	}
-
-	public void setCode(byte[] code) {
-		this.code = code;
-	}
-
-	public long getHertz() {
-		return hertz;
-	}
-
-	public void setHertz(long hertz) {
-		this.hertz = hertz;
-	}
-
 
     /**
      *
      * @return
      */
-    public long getHertz() {
-        return hertz;
+    public String getParams() {
+        return params;
     }
 
     /**
      *
-     * @param hertz
+     * @param params
      */
-    public void setHertz(long hertz) {
+    public void setParams(String params) {
+        this.params = params;
+    }
+
+    public String getHertz() {
+        return hertz;
+    }
+
+    public void setHertz(String hertz) {
         this.hertz = hertz;
     }
+
 
     /**
      *
@@ -257,18 +250,22 @@ public class Transaction extends AJson {
      * @param to
      * @param type
      * @param value
+     * @param code
+     * @param method
+     * @param params
      * @param time
      * @return
      * @throws Exception
      */
-    public static Transaction create(String privateKey, String from, String to, byte type, long value, String code, String method, long time) throws Exception {
+    public static Transaction create(String privateKey, String from, String to, byte type, String value, String code, String method, String params, long time) throws Exception {
         byte[] privateKeyBytes = DatatypeConverter.parseHexBinary(privateKey);
         byte[] typeBytes = {type};
         byte[] fromBytes = DatatypeConverter.parseHexBinary(from);
         byte[] toBytes = DatatypeConverter.parseHexBinary(to);
-        byte[] valueBytes = Utils.longToBytes(value);
+        byte[] valueBytes = value.getBytes();
         byte[] codeBytes = DatatypeConverter.parseHexBinary(code);
-        byte[] methodBytes = DatatypeConverter.parseHexBinary(method);
+        byte[] methodBytes = method.getBytes();
+        byte[] paramsBytes = params.getBytes();
         byte[] timeBytes = Utils.longToBytes(time);
 
         // Hash bytes.
@@ -279,6 +276,7 @@ public class Transaction extends AJson {
         byteArrayOutputStream.write(valueBytes);
         byteArrayOutputStream.write(codeBytes);
         byteArrayOutputStream.write(methodBytes);
+        byteArrayOutputStream.write(paramsBytes);
         byteArrayOutputStream.write(timeBytes);
         byte[] hashBytes = Crypto.hash(byteArrayOutputStream.toByteArray());
         byte[] signatureBytes = Crypto.sign(privateKeyBytes, hashBytes);
@@ -291,21 +289,12 @@ public class Transaction extends AJson {
         transaction.setTo(to);
         transaction.setValue(value);
         transaction.setTime(time);
+        transaction.setCode(code);
+        transaction.setMethod(method);
+        transaction.setParams(params);
+        transaction.setHertz("0");
         transaction.setSignature(Utils.toHexString(signatureBytes));
-        if(code != null) {
-        		transaction.setCode(code);
-        		transaction.setHertz(0);
-        		transaction.setMethod(method);
-        }
 
         return transaction;
     }
-
-	public String getMethod() {
-		return method;
-	}
-
-	public void setMethod(String method) {
-		this.method = method;
-	}
 }
