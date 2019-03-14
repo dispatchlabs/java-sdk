@@ -84,12 +84,12 @@ public class Sdk {
      * @return
      * @throws Exception
      */
-    public Receipt transferTokens(Node node, Account fromAccount, Account toAccount, long tokens) throws Exception {
+    public Transaction transferTokens(Node node, Account fromAccount, Account toAccount, long tokens) throws Exception {
         try (Http http = new Http()) {
             Transaction transaction = Transaction.create(fromAccount.getPrivateKey(), fromAccount.getAddress(), toAccount.getAddress(), Transaction.Type.TRANSFER_TOKENS, String.valueOf(tokens), "", "", "", System.currentTimeMillis());
             JSONObject jsonObject = new JSONObject(http.post("http://" + node.getHttpEndpoint().getHost()  + ":" + String.valueOf(node.getHttpEndpoint().getPort()) + "/v1/transactions", getHeaders(), transaction.toString()));
-            receipt = (Receipt) AJson.deserialize(Receipt.class, jsonObject.toString());
-            return receipt;
+            //receipt = (Receipt) AJson.deserialize(Receipt.class, jsonObject.toString());
+            return transaction;
         }
     }
 
@@ -234,21 +234,21 @@ public class Sdk {
      * @return
      * @throws Exception
      */
-    public Receipt getLastStatus() throws Exception {
+    public Receipt getLastStatus(Node node, String hash) throws Exception {
         if (receipt == null) {
             return null;
         }
-        return getStatus(receipt);
+        return getStatus(node, hash);
     }
 
     /**
      * @return
      * @throws Exception
      */
-    public Receipt getStatus(Receipt receipt) throws Exception {
+    public Receipt getStatus(Node node, String hash) throws Exception {
         try (Http http = new Http()) {
             // TODO: receipt.getNodeIp() is returning null. Plus, port 1975 shouldn't be hardcoded here.
-            JSONObject jsonObject = new JSONObject(http.get("http://" + receipt.getNodeIp() + ":1975/v1/statuses/" + receipt.getId(), getHeaders()));
+            JSONObject jsonObject = new JSONObject(http.get("http://" + node.getHttpEndpoint().getHost() + ":" + node.getHttpEndpoint().getPort() + "/v1/transactions/" + hash, getHeaders()));
             this.receipt = (Receipt) AJson.deserialize(Receipt.class, jsonObject.toString());
             return this.receipt;
         }
@@ -266,20 +266,6 @@ public class Sdk {
     }
 
     /**
-     * @param node
-     * @param id
-     * @return
-     * @throws Exception
-     */
-    public Receipt getStatus(Node node, String id) throws Exception {
-        try (Http http = new Http()) {
-            JSONObject jsonObject = new JSONObject(http.get("http://" + node.getHttpEndpoint().getHost() + ":" + String.valueOf(node.getHttpEndpoint().getPort()) + "/v1/statuses/" + id, getHeaders()));
-            receipt = (Receipt) AJson.deserialize(Receipt.class, jsonObject.toString());
-            return receipt;
-        }
-    }
-
-    /**
      * @return @throws Exception
      */
     private Map<String, String> getHeaders() throws Exception {
@@ -294,20 +280,22 @@ public class Sdk {
     public static void main(String args[]) {
         System.out.println("Dispatch Labs SDK Example");
         try {
-            Sdk sdk = new Sdk("10.0.1.3");
+            Sdk sdk = new Sdk("localhost");
             List<Node> nodes = sdk.getDelegates();
 
-            /*
+            
             Account fromAccount = sdk.createAccount();
             Account toAccount = sdk.createAccount();
-            Receipt receipt = sdk.transferTokens(nodes.get(0), fromAccount, toAccount, 45);
-            */
+            Transaction transaction = sdk.transferTokens(nodes.get(0), fromAccount, toAccount, 45);
+            
 
-            Receipt receipt = sdk.transferTokens(nodes.get(0), "0f86ea981203b26b5b8244c8f661e30e5104555068a4bd168d3e3015db9bb25a", "3ed25f42484d517cdfc72cafb7ebc9e8baa52c2c", "1dcfccb29a15aa5bfb70ce944c745eb421d04bb5", 69);
-
+            //Receipt receipt = sdk.transferTokens(nodes.get(0), "0f86ea981203b26b5b8244c8f661e30e5104555068a4bd168d3e3015db9bb25a", "3ed25f42484d517cdfc72cafb7ebc9e8baa52c2c", "1dcfccb29a15aa5bfb70ce944c745eb421d04bb5", 69);
+            Receipt receipt;
+            
             // Pending?
-            while ((receipt = sdk.getLastStatus()).getStatus().equals(Receipt.Status.PENDING)) {
+            while ((receipt = sdk.getLastStatus(nodes.get(0), transaction.getHash())).getStatus().equals(Receipt.Status.PENDING)) {
                 Thread.sleep(200);
+                System.out.println(receipt.getStatus());
             }
 
             System.out.println(receipt.getStatus());
