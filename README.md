@@ -7,8 +7,15 @@
 # ![](https://storage.googleapis.com/material-icons/external-assets/v4/icons/svg/ic_directions_run_black_24px.svg) Setup and Run
 - `git clone https://github.com/dispatchlabs/java-sdk.git`<br>
 - `cd java-sdk`<br>
-- `build.sh`<br>
-- Make sure to set `-Djava.library.path=...secp256k1/.libs`
+if macOS:
+- `brew install automake`<br>
+- `brew install libtool`<br>
+if Unix:
+- `apt-get install autoreconf`<br>
+- `apt-get install libtool`<br>
+then:
+- `sh build.sh`<br>
+- Remember to set `-Djava.library.path="...secp256k1/.libs"` in your VM Arguments
 
 ## Sample
 

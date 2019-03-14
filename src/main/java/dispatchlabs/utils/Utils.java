@@ -48,7 +48,11 @@ public class Utils {
      * @return
      */
     public static String toHexString(byte[] bytes) {
-        return DatatypeConverter.printHexBinary(bytes).toLowerCase();
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 
     /**
@@ -80,7 +84,7 @@ public class Utils {
      */
     public static String toAddressFromPublicKey(String publicKey) throws Exception {
         byte[] publicKeyBytes = toByteArray(publicKey);
-        byte[] hashablePublicKey = new byte[32];
+        byte[] hashablePublicKey = new byte[64];
         for (int i=1; i<publicKeyBytes.length; i++) {
             hashablePublicKey[i-1] = publicKeyBytes[i];
         }
